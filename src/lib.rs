@@ -164,6 +164,7 @@ pub mod lexer {
                 Token::Ident(String::from("ten")),
                 Token::ParenR,
                 Token::Semicolon,
+                Token::EOF,
             ];
 
             let mut lexer = Lexer::new(input);
