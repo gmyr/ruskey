@@ -1,20 +1,35 @@
 pub mod lexer {
     #[derive(PartialEq, Debug)]
     pub enum Token {
-        Illegal,
-        EOF,
-        Ident(String),
-        Int(i32),
+        // single character
         Assign,
         Plus,
+        Minus,
+        Bang,
+        Asterisk,
+        Slash,
+        LT,
+        GT,
         Comma,
         Semicolon,
         ParenL,
         ParenR,
         BraceL,
         BraceR,
+        // keywords
         Function,
         Let,
+        True,
+        False,
+        If,
+        Else,
+        Return,
+        // identifiers and literals
+        Ident(String),
+        Int(i32),
+        // special
+        EOF,
+        Illegal,
     }
 
     impl Token {
@@ -22,6 +37,11 @@ pub mod lexer {
             match input {
                 "fn" => Token::Function,
                 "let" => Token::Let,
+                "true" => Token::True,
+                "false" => Token::False,
+                "if" => Token::If,
+                "else" => Token::Else,
+                "return" => Token::Return,
                 _ => Token::Ident(String::from(input)),
             }
         }
@@ -51,11 +71,17 @@ pub mod lexer {
             self.skip_whitespace();
             let token = match self.ch {
                 '=' => Token::Assign,
+                '+' => Token::Plus,
+                '-' => Token::Minus,
+                '!' => Token::Bang,
+                '*' => Token::Asterisk,
+                '/' => Token::Slash,
+                '<' => Token::LT,
+                '>' => Token::GT,
+                ',' => Token::Comma,
                 ';' => Token::Semicolon,
                 '(' => Token::ParenL,
                 ')' => Token::ParenR,
-                ',' => Token::Comma,
-                '+' => Token::Plus,
                 '{' => Token::BraceL,
                 '}' => Token::BraceR,
                 '\u{0000}' => Token::EOF,
@@ -126,7 +152,15 @@ pub mod lexer {
                 x + y;
             };
             
-            let result = add(five, ten);";
+            let result = add(five, ten);
+            !-/*5;
+            5 < 10 > 5;
+            
+            if (5 < 10) {
+                return true;
+            } else {
+                return false;
+            }";
             let expected_tokens = vec![
                 Token::Let,
                 Token::Ident(String::from("five")),
@@ -164,6 +198,35 @@ pub mod lexer {
                 Token::Ident(String::from("ten")),
                 Token::ParenR,
                 Token::Semicolon,
+                Token::Bang,
+                Token::Minus,
+                Token::Slash,
+                Token::Asterisk,
+                Token::Int(5),
+                Token::Semicolon,
+                Token::Int(5),
+                Token::LT,
+                Token::Int(10),
+                Token::GT,
+                Token::Int(5),
+                Token::Semicolon,
+                Token::If,
+                Token::ParenL,
+                Token::Int(5),
+                Token::LT,
+                Token::Int(10),
+                Token::ParenR,
+                Token::BraceL,
+                Token::Return,
+                Token::True,
+                Token::Semicolon,
+                Token::BraceR,
+                Token::Else,
+                Token::BraceL,
+                Token::Return,
+                Token::False,
+                Token::Semicolon,
+                Token::BraceR,
                 Token::EOF,
             ];
 
