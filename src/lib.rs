@@ -16,6 +16,9 @@ pub mod lexer {
         ParenR,
         BraceL,
         BraceR,
+        // two character
+        Eq,
+        NotEq,
         // keywords
         Function,
         Let,
@@ -70,10 +73,24 @@ pub mod lexer {
         pub fn next_token(&mut self) -> Token {
             self.skip_whitespace();
             let token = match self.ch {
-                '=' => Token::Assign,
+                '=' => {
+                    if self.peek_char() == '=' {
+                        self.read_char();
+                        Token::Eq
+                    } else {
+                        Token::Assign
+                    }
+                }
                 '+' => Token::Plus,
                 '-' => Token::Minus,
-                '!' => Token::Bang,
+                '!' => {
+                    if self.peek_char() == '=' {
+                        self.read_char();
+                        Token::NotEq
+                    } else {
+                        Token::Bang
+                    }
+                }
                 '*' => Token::Asterisk,
                 '/' => Token::Slash,
                 '<' => Token::LT,
@@ -107,6 +124,14 @@ pub mod lexer {
             }
             self.position = self.read_position;
             self.read_position += 1;
+        }
+
+        fn peek_char(&self) -> char {
+            if self.read_position >= self.input.len() {
+                '\u{0000}'
+            } else {
+                self.input[self.read_position]
+            }
         }
 
         fn read_keyword_or_identifier(&mut self) -> Token {
@@ -160,7 +185,10 @@ pub mod lexer {
                 return true;
             } else {
                 return false;
-            }";
+            }
+            
+            10 == 10;
+            10 != 9;";
             let expected_tokens = vec![
                 Token::Let,
                 Token::Ident(String::from("five")),
@@ -227,6 +255,14 @@ pub mod lexer {
                 Token::False,
                 Token::Semicolon,
                 Token::BraceR,
+                Token::Int(10),
+                Token::Eq,
+                Token::Int(10),
+                Token::Semicolon,
+                Token::Int(10),
+                Token::NotEq,
+                Token::Int(9),
+                Token::Semicolon,
                 Token::EOF,
             ];
 
