@@ -272,4 +272,5 @@ mod tests {
                 panic!("mismatch! wanted: {:?}, got: {:?}", token, lexer_token);
             }
         }
-    }}
+    }
+}
