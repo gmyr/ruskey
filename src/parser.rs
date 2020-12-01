@@ -1,5 +1,5 @@
-use super::ast::{Identifier, LetStatement, Program, Statement};
-use super::lexer::{Lexer, Token};
+use super::ast::*;
+use super::lexer::*;
 
 pub struct Parser {
     lexer: Lexer,
@@ -54,6 +54,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Box<dyn Statement>> {
         match self.cur_token {
             Token::Let => self.parse_let_statement(),
+            Token::Return => self.parse_return_statement(),
             _ => None,
         }
     }
@@ -78,7 +79,18 @@ impl Parser {
             self.next_token();
         }
 
-        Some(Box::new(LetStatement { name: name }))
+        Some(Box::new(LetStatement {
+            name: Box::new(name),
+        }))
+    }
+
+    fn parse_return_statement(&mut self) -> Option<Box<dyn Statement>> {
+        self.next_token();
+        // TODO: Skipping expression for now
+        while self.peek_token != Token::Semicolon {
+            self.next_token();
+        }
+        Some(Box::new(ReturnStatement {}))
     }
 
     fn next_token(&mut self) {
@@ -104,7 +116,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::super::ast::*;
-    use super::super::lexer::Lexer;
+    use super::super::lexer::*;
     use super::*;
 
     #[test]
@@ -114,9 +126,9 @@ mod tests {
                      let foobar = 838383;";
         let lexer = Lexer::new(input);
         let mut parser = Parser::new(lexer);
-
         let program = parser.parse_program();
         check_parser_errors(&parser);
+
         if program.statements.len() != 3 {
             panic!(
                 "program.statements.len() != 3, got={}",
@@ -126,13 +138,13 @@ mod tests {
 
         let expected_identifiers = vec!["x", "y", "foobar"];
         for (i, ident) in expected_identifiers.into_iter().enumerate() {
-            let statement = &program.statements[i];
-            test_let_statement(statement, ident);
+            let stmt = &program.statements[i];
+            test_let_statement(stmt, ident);
         }
     }
 
-    fn test_let_statement(statement: &Box<dyn Statement>, name: &str) {
-        match statement.as_any().downcast_ref::<LetStatement>() {
+    fn test_let_statement(stmt: &Box<dyn Statement>, name: &str) {
+        match stmt.as_any().downcast_ref::<LetStatement>() {
             Some(let_statement) => {
                 if let_statement.name.value != name {
                     panic!(
@@ -141,7 +153,32 @@ mod tests {
                     );
                 }
             }
-            None => panic!("statement is not a LetStatement"),
+            None => panic!("expected LetStatement"),
+        }
+    }
+
+    #[test]
+    fn test_return_statement() {
+        let input = "return 5;
+                     return 10;
+                     return 993322;";
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program();
+        check_parser_errors(&parser);
+
+        if program.statements.len() != 3 {
+            panic!(
+                "program.statements.len() != 3, got={}",
+                program.statements.len()
+            );
+        }
+
+        for stmt in program.statements {
+            match stmt.as_any().downcast_ref::<ReturnStatement>() {
+                Some(_) => (),
+                None => panic!("expected ReturnStatement"),
+            }
         }
     }
 
