@@ -1,6 +1,6 @@
 # Ruskey
 
-![Rust](https://github.com/gmyr/ruskey/workflows/Rust/badge.svg?branch=main)
+![Build and Test](https://github.com/gmyr/ruskey/workflows/Build%20and%20Test/badge.svg?branch=main)
 
 An interpreter for the [Monkey](https://monkeylang.org/) programming language written in Rust.
 
