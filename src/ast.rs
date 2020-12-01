@@ -1,5 +1,6 @@
 use std::any::Any;
 
+// TODO: Do we actually need this?
 pub trait Node {}
 
 pub trait Statement: Node {
